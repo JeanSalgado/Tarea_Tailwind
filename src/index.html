@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAMING.JS</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4">
+        <ul class="flex justify-around text-white text-lg font-semibold">
+            <li><a href="index.html" class="hover:underline px-4">Inicio</a></li>
+            <li><a href="about.html" class="hover:underline px-4">Nosotros</a></li>
+            <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
+            <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
+            <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
+        <h1 class="text-4xl font-extrabold text-center mb-6 text-gray-800">TU COMPUTADORA SOÑADA AL MEJOR PRECIO</h1>
+        <p class="text-2xl text-center text-lg text-gray-600" >VISITANOS TENEMOS TODO LO QUE BUSCAS</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+            <div>
+                <img src="https://mastek.com.pe/publico/img_data/0086621845.jpeg" alt="Imagen 1" class="w-full h-auto">
+            </div>
+            <div>
+                <img src="https://jashtechperu.com.pe/wp-content/uploads/2022/03/INTEL.jpeg" alt="Imagen 2" class="w-full h-auto">
+            </div>
+            <div>
+                <img src="https://mastek.com.pe/publico/img_data/3482676282.jpeg" alt="Imagen 3" class="w-full h-auto">
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-6 flex flex-col md:flex-row">
+        
+        <!-- Carrusel (lado izquierdo) -->
+        <div class="w-full md:w-1/2">
+            <div id="carousel" class="relative" data-carousel="slide">
+                <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
+                    <div class="hidden duration-700 ease-in-out" data-carousel-item>
+                        <img src="https://nomadaware.com.ec/wp-content/uploads/elementor/thumbs/BANNER-WEB-AMD-RYZEN-BUNDLE-qtx3ue2hw4xdlb5jp841nj740zu80r13fvpfvzksxu.webp" alt="Imagen 1" class="w-full h-auto object-cover">
+                    </div>
+                    <div class="hidden duration-700 ease-in-out" data-carousel-item>
+                        <img src="https://nomadaware.com.ec/wp-content/uploads/elementor/thumbs/large-BANNER-WEB-BUNDLE-STAR-WARS-qszzat2ceatqefo9zt8m562ry05e5zmbk9rzmenx54.webp" alt="Imagen 2" class="w-full h-auto object-cover">
+                    </div>
+                </div>
+                <!-- Controles del carrusel -->
+                <button type="button" class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
+                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
+                        <svg aria-hidden="true" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span class="sr-only">Anterior</span>
+                    </span>
+                </button>
+                <button type="button" class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
+                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
+                        <svg aria-hidden="true" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                        <span class="sr-only">Siguiente</span>
+                    </span>
+                </button>
+            </div> 
+        </div>
+
+        <!-- Texto (lado derecho) -->
+        <div class="w-full md:w-1/2 p-6 flex flex-col justify-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">PCs Gamers y Componentes de Alta Calidad</h2>
+            <p class="text-lg text-gray-600 mb-4">Ofrecemos las mejores opciones para crear tu computadora gamer ideal. Con componentes de marcas reconocidas y garantía asegurada.</p>
+            <ul class="list-disc list-inside text-gray-600">
+                <li>Procesadores de última generación</li>
+                <li>Tarjetas gráficas poderosas</li>
+                <li>Accesorios para optimizar tu experiencia de juego</li>
+            </ul>
+        </div>
+    </div>
+    
+    
+    <!-- Footer -->
+    <footer class="bg-blue-600 p-4 mt-10">
+        <p class="text-center text-white">© 2024 GAMING.JS - Todos los derechos reservados</p>
+    </footer>
+</body>
+</html>
+
+
