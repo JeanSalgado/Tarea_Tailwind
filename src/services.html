@@ -14,6 +14,10 @@
             <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
             <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
             <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+            <li><a href="carrito.html" class="hover:underline px-4">Carrito</a></li>
+            <a id="loginLink" href="login.html"
+            class="text-gray-700 hover:text-orange-500 transition duration-300">IDENTIFICARSE</a>
+</ul>
         </ul>
     </nav>
 
@@ -50,7 +54,6 @@
             </li>
         </ul>
     
-        <!-- Espacio para una imagen -->
         <div class="mt-8 flex justify-center space-x-4">
             <img src="https://i.blogs.es/3f45c4/pcpotente-ap/650_1200.jpeg" alt="Descripción de la imagen" class="w-full max-w-xs rounded-lg shadow-md">
             <img src="https://cdn.website-editor.net/97f420ccea2146b3ba8894cfae57b06a/dms3rep/multi/taller_gaming_valencia_02.jpg" alt="Descripción de la imagen" class="w-full max-w-xs rounded-lg shadow-md">
@@ -60,10 +63,24 @@
         
     </div>
     
-
-    <!-- Footer -->
     <footer class="bg-blue-600 p-4 mt-10">
         <p class="text-center text-white">© 2024 Mi Sitio Web - Todos los derechos reservados</p>
     </footer>
+
+    <script>
+        function verificarToken() {
+                const token = localStorage.getItem('token'); // Cambia 'token' por la clave que estés usando
+                const loginLink = document.getElementById('loginLink');
+    
+                if (token) {
+                    // Si hay token, cambia "Iniciar Sesión" por "Perfil"
+                    loginLink.innerHTML = 'Perfil';
+                    loginLink.href = 'perfil.html'; // Cambia la ruta a la página de perfil
+                }
+            }
+    
+            // Llamar a la función al cargar la página
+            document.addEventListener('DOMContentLoaded', verificarToken);
+       </script>
 </body>
 </html>

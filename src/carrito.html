@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - Mi Sitio Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+    <nav class="bg-blue-600 p-4">
+        <ul class="flex justify-around text-white text-lg font-semibold">
+            <li><a href="index.html" class="hover:underline px-4">Inicio</a></li>
+            <li><a href="about.html" class="hover:underline px-4">Nosotros</a></li>
+            <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
+            <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
+            <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+            <a id="loginLink" href="login.html"
+                class="text-gray-700 hover:text-orange-500 transition duration-300">IDENTIFICARSE</a>
+        </ul>
+    </nav>
+
+    <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
+        <h1 class="text-4xl font-extrabold text-center mb-6 text-gray-800">Carrito de Compras</h1>
+        <section class="py-12 bg-white">
+            <div id="carrito-container" class="container mx-auto">
+                <!-- Aquí se cargarán los productos en el carrito -->
+            </div>
+        </section>
+        <div class="text-right mt-4">
+            <h2 class="text-xl font-bold">Total: $<span id="totalCarrito">0</span></h2>
+            <button id="finalizarCompra" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Finalizar Compra
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Función para cargar productos en el carrito
+        function cargarCarrito() {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            const contenedor = document.getElementById('carrito-container');
+            const totalCarritoElement = document.getElementById('totalCarrito');
+            let totalCarrito = 0;
+            contenedor.innerHTML = ''; // Limpiar el contenedor antes de agregar nuevos productos
+
+            if (carrito.length === 0) {
+                contenedor.innerHTML = '<p class="text-center text-gray-600">Tu carrito está vacío.</p>';
+                totalCarritoElement.innerText = '0';
+                return;
+            }
+
+            carrito.forEach(producto => {
+                // Convertir el precio a número antes de hacer cálculos
+                const precio = parseFloat(producto.prod_prec);
+                const subtotal = precio * producto.cantidad;
+                totalCarrito += subtotal;
+                const productoHTML = `
+                    <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-lg mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold">${producto.prod_nom}</h3>
+                            <p class="text-gray-700">Cantidad: ${producto.cantidad}</p>
+                            <p class="text-gray-700">Subtotal: $${subtotal.toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center">
+                            <button class="bg-gray-300 text-black font-bold py-1 px-3 rounded cantidad-decremento" data-id="${producto.prod_id}">-</button>
+                            <span class="mx-4">${producto.cantidad}</span>
+                            <button class="bg-gray-300 text-black font-bold py-1 px-3 rounded cantidad-incremento" data-id="${producto.prod_id}">+</button>
+                        </div>
+                        <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded eliminar-btn" data-id="${producto.prod_id}">Eliminar</button>
+                    </div>
+                `;
+                contenedor.innerHTML += productoHTML;
+            });
+
+            // Mostrar el total actualizado
+            totalCarritoElement.innerText = totalCarrito.toFixed(2);
+
+            // Asignar eventos después de cargar los productos
+            asignarEventos();
+        }
+
+        // Función para asignar eventos a los botones de incrementar, decrementar y eliminar
+        function asignarEventos() {
+            // Agregar eventos a los botones de eliminar
+            document.querySelectorAll('.eliminar-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const prodId = e.target.getAttribute('data-id');
+                    eliminarProducto(prodId);
+                });
+            });
+
+            // Agregar eventos a los botones de incremento
+            document.querySelectorAll('.cantidad-incremento').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const prodId = e.target.getAttribute('data-id');
+                    incrementarCantidad(prodId);
+                });
+            });
+
+            // Agregar eventos a los botones de decremento
+            document.querySelectorAll('.cantidad-decremento').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const prodId = e.target.getAttribute('data-id');
+                    decrementarCantidad(prodId);
+                });
+            });
+        }
+
+        // Función para eliminar producto del carrito
+        function eliminarProducto(id) {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            const nuevoCarrito = carrito.filter(producto => producto.prod_id != id); // Usar '!=' para comparar el id como número y cadena
+            localStorage.setItem('carrito', JSON.stringify(nuevoCarrito));
+            cargarCarrito(); // Recargar el carrito después de eliminar un producto
+        }
+
+        // Función para incrementar la cantidad de un producto
+        function incrementarCantidad(id) {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            const producto = carrito.find(producto => producto.prod_id == id); // Asegurarse de que coincidan los tipos
+            if (producto) {
+                producto.cantidad += 1;
+                localStorage.setItem('carrito', JSON.stringify(carrito));
+                cargarCarrito(); // Recargar el carrito
+            }
+        }
+
+        // Función para decrementar la cantidad de un producto
+        function decrementarCantidad(id) {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            const producto = carrito.find(producto => producto.prod_id == id); // Asegurarse de que coincidan los tipos
+            if (producto && producto.cantidad > 1) { // Asegurarse de que no sea menor que 1
+                producto.cantidad -= 1;
+                localStorage.setItem('carrito', JSON.stringify(carrito));
+                cargarCarrito(); // Recargar el carrito
+            } else if (producto && producto.cantidad === 1) {
+                eliminarProducto(id); // Eliminar si la cantidad llega a 1 y se intenta decrementar
+            }
+        }
+
+        // Cargar el carrito cuando la página haya cargado
+        window.onload = cargarCarrito;
+
+        
+
+        // Función para finalizar la compra
+        
+        document.getElementById('finalizarCompra').addEventListener('click', async () => {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            if (carrito.length === 0) {
+                alert('Tu carrito está vacío. Agrega productos para continuar.');
+                return;
+            }
+
+            // Crear un arreglo de productos a enviar al backend
+            const productosAEnviar = carrito.map(producto => ({
+                prod_id: producto.prod_id, // Obtener el ID del producto
+                cantidad: producto.cantidad  // Obtener la cantidad del producto
+            }));
+
+            try {
+                const response = await fetch('http://localhost:3000/actualizar-stock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productos: productosAEnviar }), // Enviar el carrito al backend
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Gracias por tu compra! Stock actualizado.');
+                    localStorage.removeItem('carrito'); // Limpiar el carrito
+                    cargarCarrito(); // Actualizar la vista
+                } else {
+                    alert('Error al actualizar el stock: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error al finalizar la compra:', error);
+                alert('Hubo un problema al procesar la compra.');
+            }
+        });
+
+    </script>
+
+    <script>
+        function verificarToken() {
+            const token = localStorage.getItem('token'); // Cambia 'token' por la clave que estés usando
+            const loginLink = document.getElementById('loginLink');
+
+            if (token) {
+                // Si hay token, cambia "Iniciar Sesión" por "Perfil"
+                loginLink.innerHTML = 'Perfil';
+                loginLink.href = 'perfil.html'; // Cambia la ruta a la página de perfil
+            }
+        }
+
+        // Llamar a la función al cargar la página
+        document.addEventListener('DOMContentLoaded', verificarToken);
+
+        // Función para finalizar la compra y generar el PDF
+document.getElementById('finalizarCompra').addEventListener('click', async () => {
+    const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    if (carrito.length === 0) {
+        alert('Tu carrito está vacío. Agrega productos para continuar.');
+        return;
+    }
+
+    // Crear un arreglo de productos a enviar al backend
+    const productosAEnviar = carrito.map(producto => ({
+        prod_id: producto.prod_id, // Obtener el ID del producto
+        cantidad: producto.cantidad  // Obtener la cantidad del producto
+    }));
+
+    try {
+        // Obtener datos del usuario
+        const usuarioResponse = await fetch('http://localhost:3000/usuarios'); // Asegúrate de que la URL es correcta
+        const usuarios = await usuarioResponse.json(); // Suponiendo que el endpoint devuelve un array de usuarios
+        const usuario = usuarios[0]; // Tomar el primer usuario del array
+
+        const response = await fetch('http://localhost:3000/actualizar-stock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productos: productosAEnviar }), // Enviar el carrito al backend
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Generar PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let totalCarrito = 0;
+
+            // Estilos del PDF
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.text("Factura de Compra", 105, 20, { align: "center" });
+
+            // Datos del usuario
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`ID de Usuario: ${usuario.usua_id}`, 20, 30);
+            doc.text(`Cédula: ${usuario.usua_ced}`, 20, 35);
+            doc.text(`Nombre: ${usuario.usua_nom} ${usuario.usua_ape}`, 20, 40);
+            doc.text(`Correo: ${usuario.usua_correo}`, 20, 45);
+
+            // Separador
+            doc.setLineWidth(0.5);
+            doc.line(10, 50, 200, 50); // Línea horizontal
+
+            // Encabezado de la tabla
+            doc.setFont('helvetica', 'bold');
+            doc.text("Producto", 20, 55);
+            doc.text("Cantidad", 120, 55);
+            doc.text("Subtotal", 170, 55);
+
+            doc.setLineWidth(0.5);
+            doc.line(10, 58, 200, 58); // Línea horizontal
+
+            // Detalles de la compra
+            let startY = 65; // Posición inicial de Y
+            carrito.forEach(producto => {
+                const precio = parseFloat(producto.prod_prec);
+                const subtotal = precio * producto.cantidad;
+                totalCarrito += subtotal;
+
+                doc.setFont('helvetica', 'normal');
+                doc.text(producto.prod_nom, 20, startY);
+                doc.text(producto.cantidad.toString(), 120, startY);
+                doc.text(`$${subtotal.toFixed(2)}`, 170, startY);
+
+                startY += 10; // Aumentar la posición Y para la siguiente fila
+            });
+
+            // Línea de total
+            doc.setFont('helvetica', 'bold');
+            doc.setLineWidth(0.5);
+            doc.line(10, startY, 200, startY); // Línea horizontal
+            doc.text("Total", 120, startY + 10);
+            doc.text(`$${totalCarrito.toFixed(2)}`, 170, startY + 10);
+
+            // Firmar la factura
+            doc.setFont('helvetica', 'normal');
+            doc.text("Gracias por su compra!", 105, startY + 25, { align: "center" });
+
+            // Descargar el PDF
+            doc.save("factura_compra.pdf"); 
+
+            alert('Gracias por tu compra! Stock actualizado.');
+            localStorage.removeItem('carrito'); // Limpiar el carrito
+            cargarCarrito(); // Actualizar la vista
+        } else {
+            alert('Error al actualizar el stock: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error al finalizar la compra:', error);
+        alert('Hubo un problema al procesar la compra.');
+    }
+});
+
+
+
+    </script>
+    
+</body>
+
+</html>

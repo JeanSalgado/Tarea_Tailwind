@@ -16,6 +16,9 @@
             <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
             <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
             <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+            <li><a href="carrito.html" class="hover:underline px-4">Carrito</a></li>
+            <a id="loginLink" href="login.html"
+                    class="text-gray-700 hover:text-orange-500 transition duration-300">IDENTIFICARSE</a>
         </ul>
     </nav>
 
@@ -36,7 +39,6 @@
     </div>
     <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-6 flex flex-col md:flex-row">
         
-        <!-- Carrusel (lado izquierdo) -->
         <div class="w-full md:w-1/2">
             <div id="carousel" class="relative" data-carousel="slide">
                 <div class="relative h-56 overflow-hidden rounded-lg md:h-96">
@@ -47,7 +49,7 @@
                         <img src="https://nomadaware.com.ec/wp-content/uploads/elementor/thumbs/large-BANNER-WEB-BUNDLE-STAR-WARS-qszzat2ceatqefo9zt8m562ry05e5zmbk9rzmenx54.webp" alt="Imagen 2" class="w-full h-auto object-cover">
                     </div>
                 </div>
-                <!-- Controles del carrusel -->
+        
                 <button type="button" class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
                     <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
                         <svg aria-hidden="true" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -67,7 +69,6 @@
             </div> 
         </div>
 
-        <!-- Texto (lado derecho) -->
         <div class="w-full md:w-1/2 p-6 flex flex-col justify-center">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">PCs Gamers y Componentes de Alta Calidad</h2>
             <p class="text-lg text-gray-600 mb-4">Ofrecemos las mejores opciones para crear tu computadora gamer ideal. Con componentes de marcas reconocidas y garantía asegurada.</p>
@@ -80,10 +81,25 @@
     </div>
     
     
-    <!-- Footer -->
     <footer class="bg-blue-600 p-4 mt-10">
         <p class="text-center text-white">© 2024 GAMING.JS - Todos los derechos reservados</p>
     </footer>
+
+   <script>
+    function verificarToken() {
+            const token = localStorage.getItem('token'); // Cambia 'token' por la clave que estés usando
+            const loginLink = document.getElementById('loginLink');
+
+            if (token) {
+                // Si hay token, cambia "Iniciar Sesión" por "Perfil"
+                loginLink.innerHTML = 'Perfil';
+                loginLink.href = 'perfil.html'; // Cambia la ruta a la página de perfil
+            }
+        }
+
+        // Llamar a la función al cargar la página
+        document.addEventListener('DOMContentLoaded', verificarToken);
+   </script>
 </body>
 </html>
 

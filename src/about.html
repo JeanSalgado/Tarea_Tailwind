@@ -14,6 +14,11 @@
             <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
             <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
             <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+            <li><a href="carrito.html" class="hover:underline px-4">Carrito</a></li>
+            <a id="loginLink" href="login.html"
+            class="text-gray-700 hover:text-orange-500 transition duration-300">IDENTIFICARSE</a>
+            
+</ul>
         </ul>
     </nav>
 
@@ -31,17 +36,31 @@
         <p class="text-justify text-lg text-gray-600 leading-relaxed mt-4">
             Con un equipo comprometido y apasionado por el gaming, en <strong>GAMING.JS</strong> estamos aquí para asesorarte y ayudarte a llevar tu experiencia de juego al siguiente nivel.
         </p>
-    
-        <!-- Espacio para una imagen -->
+
         <div class="mt-8">
             <img src="https://www.teraguate.com/web/image/114865-43817bfc/componenetes-gaming.jpg" alt="Descripción de la imagen" class="mx-auto w-full max-w-lg rounded-lg shadow-md">
         </div>
     </div>
     
 
-    <!-- Footer -->
     <footer class="bg-blue-600 p-4 mt-10">
         <p class="text-center text-white">© 2024 GAMING.JS - Todos los derechos reservados</p>
     </footer>
+
+    <script>
+        function verificarToken() {
+                const token = localStorage.getItem('token'); // Cambia 'token' por la clave que estés usando
+                const loginLink = document.getElementById('loginLink');
+    
+                if (token) {
+                    // Si hay token, cambia "Iniciar Sesión" por "Perfil"
+                    loginLink.innerHTML = 'Perfil';
+                    loginLink.href = 'perfil.html'; // Cambia la ruta a la página de perfil
+                }
+            }
+    
+            // Llamar a la función al cargar la página
+            document.addEventListener('DOMContentLoaded', verificarToken);
+       </script>
 </body>
 </html>

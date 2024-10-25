@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - GAMING.JS</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-blue-600 p-4">
+        <ul class="flex justify-around text-white text-lg font-semibold">
+            <li><a href="index.html" class="hover:underline px-4">Inicio</a></li>
+            <li><a href="about.html" class="hover:underline px-4">Nosotros</a></li>
+            <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
+            <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
+            <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+            <li><a href="perfil.html" class="hover:underline px-4">Perfil</a></li>
+            <li><a href="carrito.html" class="hover:underline px-4">Carrito</a></li>
+        </ul>
+    </nav>
+
+    <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
+        <h1 class="text-4xl font-extrabold text-center mb-6 text-gray-800">Perfil</h1>
+
+        <!-- Sección de información del usuario -->
+        <div class="mb-10 text-center">
+            <div class="inline-block bg-gray-100 p-4 rounded-lg shadow-lg">
+                <p id="user-rol" class="text-2xl font-semibold"></p>
+                <img id="user-photo" src="" alt="Foto del usuario" class="w-24 h-24 rounded-full mx-auto mb-4">
+                <h2 id="user-name" class="text-2xl font-semibold text-gray-800"></h2>
+                <p id="user-email" class="text-gray-600"></p>
+
+                <!-- Botón de cerrar sesión -->
+                <button id="logout-btn" class="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Sección para mostrar los productos en una tabla -->
+        <section class="py-12 bg-white">
+            <h2 class="text-3xl font-bold mb-4">Tus Productos</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2 border">Imagen</th>
+                            <th class="px-4 py-2 border">Nombre</th>
+                            <th class="px-4 py-2 border">Descripción</th>
+                            <th class="px-4 py-2 border">Precio</th>
+                            <th class="px-4 py-2 border">Estado</th>
+                            <th class="px-4 py-2 border">Stock</th>
+                            <th class="px-4 py-2 border">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list">
+                        <!-- Los productos se insertarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-blue-600 p-4">
+        <p class="text-center text-white">© 2024 GAMING.JS - Todos los derechos reservados</p>
+    </footer>
+</body>
+</html>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Obtener los datos del usuario
+        const usuarioResponse = await fetch('http://localhost:3000/usuarios');
+        const usuarios = await usuarioResponse.json();
+        const usuario = usuarios[0];  // Asumiendo que hay un solo usuario
+
+        // Insertar la información del usuario en la página
+        document.getElementById('user-rol').textContent = usuario.usua_rol;
+        document.getElementById('user-name').textContent = `${usuario.usua_nom} ${usuario.usua_ape}`;
+        document.getElementById('user-email').textContent = usuario.usua_correo;
+        document.getElementById('user-photo').src = usuario.usua_url_fot || 'default-user-photo.png';
+
+        // Manejar el botón de cerrar sesión
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            // Aquí puedes agregar la lógica de cerrar sesión
+            alert('Sesión cerrada exitosamente');
+            window.location.href = 'index.html'; // Redirigir al inicio o página de login
+        });
+
+        // Obtener los productos
+        const response = await fetch('http://localhost:3000/productos');
+        const productos = await response.json();
+
+        const productList = document.getElementById('product-list');
+        productList.innerHTML = '';  // Limpia el contenedor antes de insertar productos
+
+        productos.forEach(producto => {
+            const productRow = document.createElement('tr');
+            
+            productRow.innerHTML = `
+                <td class="border px-4 py-2"><img src="${producto.prod_ruta}" alt="${producto.prod_nom}" class="w-16 h-auto"></td>
+                <td class="border px-4 py-2">${producto.prod_nom}</td>
+                <td class="border px-4 py-2">${producto.prod_desc}</td>
+                <td class="border px-4 py-2 text-green-600 font-bold">$${producto.prod_prec}</td>
+                <td class="border px-4 py-2">${producto.prod_estado}</td>
+                <td class="border px-4 py-2">${producto.prod_stock}</td>
+                <td class="border px-4 py-2">
+                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded edit-btn" data-id="${producto.prod_id}">Editar</button>
+                    <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded delete-btn" data-id="${producto.prod_id}">Eliminar</button>
+                </td>
+            `;
+
+            productList.appendChild(productRow);
+        });
+
+        // Añadir eventos a los botones de editar
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const prodId = e.target.getAttribute('data-id');
+                const newName = prompt('Editar nombre del producto:');
+                if (newName) {
+                    await fetch(`/productos/${prodId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ prod_nom: newName }),
+                    });
+                    location.reload();  // Recarga la página para mostrar los cambios
+                }
+            });
+        });
+
+        // Añadir eventos a los botones de eliminar
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const prodId = e.target.getAttribute('data-id');
+                const confirmDelete = confirm('¿Estás seguro de eliminar este producto?');
+                if (confirmDelete) {
+                    await fetch(`/productos/${prodId}`, {
+                        method: 'DELETE',
+                    });
+                    location.reload();  // Recarga la página después de la eliminación
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error('Error al obtener los datos', error);
+    }
+});
+</script>
+
+<script>
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+    });
+
+</script>
+</body>
+</html>

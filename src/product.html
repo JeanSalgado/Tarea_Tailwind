@@ -14,6 +14,10 @@
             <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
             <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
             <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+            <li><a href="carrito.html" class="hover:underline px-4">Carrito</a></li>
+            <a id="loginLink" href="login.html"
+            class="text-gray-700 hover:text-orange-500 transition duration-300">IDENTIFICARSE</a>
+</ul>
         </ul>
     </nav>
 
@@ -21,27 +25,78 @@
         <h1 class="text-4xl font-extrabold text-center mb-6 text-gray-800">Productos</h1>
         <p class="text-center text-lg text-gray-600">Explora nuestro stock en productos</p>
         <section class="py-12 bg-white">
-            <div class="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-gray-100 p-6 rounded-lg shadow-lg text-center">
-                    <img src="https://i.ebayimg.com/images/g/TaEAAOSwcr5ljNqo/s-l500.webp" alt="RTX 4090 Asus Rog Strix" class="w-full h-auto">
-                    <h3 class="text-xl font-semibold mt-4">RTX 4090 Asus Rog Strix</h3>
-                    <p class="text-gray-700 mt-2">TARJETA DE VIDEO.</p>
-                    <p class="text-green-600 font-bold text-lg mt-2">$1.300</p>
-                    <button class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Comprar</button>
-                </div>
-                <div class="bg-gray-100 p-6 rounded-lg shadow-lg text-center">
-                    <img src="https://down-tw.img.susercontent.com/file/tw-11134207-7qukz-lgt99ndq6iwc76" alt="Ryzen Threadripper Pro 7995wx" class="w-full h-auto">
-                    <h3 class="text-xl font-semibold mt-4">Ryzen Threadripper Pro 7995wx</h3>
-                    <p class="text-gray-700 mt-2">PROCESADOR RYZEN</p>
-                    <p class="text-green-600 font-bold text-lg mt-2">$950</p>
-                    <button class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Comprar</button>
-                </div>
-                <div class="bg-gray-100 p-6 rounded-lg shadow-lg text-center">
-                    <img src="https://m.media-amazon.com/images/I/81doiK8qERL._AC_SL1500_.jpg" alt="ASUS ROG Strix Z790-E Gaming"  class="w-full h-auto">
-                    <h3 class="text-xl font-semibold mt-4">ASUS ROG Strix Z790-E Gaming</h3>
-                    <p class="text-gray-700 mt-2">PLACA BASE</p>
-                    <p class="text-green-600 font-bold text-lg mt-2">$400</p>
-                    <button class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Comprar</button>
-                </div>
-                </div>
-    </div
+            <div id="productos-container" class="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Aquí se cargarán los productos dinámicamente -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Función para cargar productos dinámicamente
+        async function cargarProductos() {
+            try {
+                const response = await fetch('http://localhost:3000/productos');
+                const productos = await response.json();
+    
+                const contenedor = document.getElementById('productos-container');
+                contenedor.innerHTML = ''; // Limpiar el contenedor antes de agregar nuevos productos
+    
+                productos.forEach(producto => {
+                    const productoHTML = `
+                        <div class="bg-gray-100 p-6 rounded-lg shadow-lg text-center">
+                            <img src="${producto.prod_ruta}" alt="${producto.prod_nom}" class="w-full h-auto">
+                            <h3 class="text-xl font-semibold mt-4">${producto.prod_nom}</h3>
+                            <p class="text-gray-700 mt-2">${producto.prod_desc}</p>
+                            <p class="text-black-600 font-bold text-lg mt-2">STOCK: ${producto.prod_stock}</p>
+                            <p class="text-green-600 font-bold text-lg mt-2">$${producto.prod_prec}</p>
+                            <button class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onclick='agregarAlCarrito(${JSON.stringify(producto)})'>Comprar</button>
+                        </div>
+                    `;
+                    contenedor.innerHTML += productoHTML;
+                });
+            } catch (error) {
+                console.error('Error al cargar los productos:', error);
+            }
+        }
+    
+        // Función para agregar al carrito
+        function agregarAlCarrito(producto) {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            // Verifica si el producto ya está en el carrito
+            const productoExistente = carrito.find(item => item.prod_id === producto.prod_id);
+            
+            if (productoExistente) {
+                // Si ya está en el carrito, solo aumentamos la cantidad
+                productoExistente.cantidad++;
+            } else {
+                // Si no está, lo agregamos con cantidad 1
+                producto.cantidad = 1; // Establecemos la cantidad inicial en 1
+                carrito.push(producto);
+            }
+    
+            localStorage.setItem('carrito', JSON.stringify(carrito)); // Guarda el carrito
+            alert('Producto agregado al carrito');
+        }
+    
+        // Cargar productos cuando la página haya cargado
+        window.onload = cargarProductos;
+    </script>
+    
+
+<script>
+    function verificarToken() {
+            const token = localStorage.getItem('token'); // Cambia 'token' por la clave que estés usando
+            const loginLink = document.getElementById('loginLink');
+
+            if (token) {
+                // Si hay token, cambia "Iniciar Sesión" por "Perfil"
+                loginLink.innerHTML = 'Perfil';
+                loginLink.href = 'perfil.html'; // Cambia la ruta a la página de perfil
+            }
+        }
+
+        // Llamar a la función al cargar la página
+        document.addEventListener('DOMContentLoaded', verificarToken);
+   </script>
+</body>
+</html>

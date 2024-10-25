@@ -14,14 +14,17 @@
             <li><a href="services.html" class="hover:underline px-4">Servicios</a></li>
             <li><a href="product.html" class="hover:underline px-4">Producto</a></li>
             <li><a href="contact.html" class="hover:underline px-4">Contacto</a></li>
+            <li><a href="carrito.html" class="hover:underline px-4">Carrito</a></li>
+            <a id="loginLink" href="login.html"
+            class="text-gray-700 hover:text-orange-500 transition duration-300">IDENTIFICARSE</a>
+</ul>
         </ul>
     </nav>
 
     <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
         <h1 class="text-4xl font-extrabold text-center mb-6 text-gray-800">Contáctanos</h1>
         <p class="text-center text-lg text-gray-600">Por favor, rellena el siguiente formulario para ponerte en contacto con nosotros.</p>
-        
-        <!-- Formulario de contacto -->
+      
         <form action="#" method="POST" class="mt-8 max-w-lg mx-auto bg-gray-100 p-6 rounded-lg shadow-md">
             <div class="mb-4">
                 <label for="name" class="block text-gray-700">Nombre Completo</label>
@@ -41,9 +44,24 @@
         </form>
     </div>
 
-    <!-- Footer -->
     <footer class="bg-blue-600 p-4 mt-10">
         <p class="text-center text-white">© 2024 Mi Sitio Web - Todos los derechos reservados</p>
     </footer>
+
+    <script>
+        function verificarToken() {
+                const token = localStorage.getItem('token'); // Cambia 'token' por la clave que estés usando
+                const loginLink = document.getElementById('loginLink');
+    
+                if (token) {
+                    // Si hay token, cambia "Iniciar Sesión" por "Perfil"
+                    loginLink.innerHTML = 'Perfil';
+                    loginLink.href = 'perfil.html'; // Cambia la ruta a la página de perfil
+                }
+            }
+    
+            // Llamar a la función al cargar la página
+            document.addEventListener('DOMContentLoaded', verificarToken);
+       </script>
 </body>
 </html>
