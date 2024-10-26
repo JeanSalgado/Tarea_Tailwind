@@ -58,13 +58,15 @@
                 // Convertir el precio a número antes de hacer cálculos
                 const precio = parseFloat(producto.prod_prec);
                 const subtotal = precio * producto.cantidad;
-                totalCarrito += subtotal;
+                const iva = subtotal * 0.15;
+                totalCarrito += subtotal + iva;
                 const productoHTML = `
                     <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-lg mb-4">
                         <div>
                             <h3 class="text-xl font-semibold">${producto.prod_nom}</h3>
                             <p class="text-gray-700">Cantidad: ${producto.cantidad}</p>
                             <p class="text-gray-700">Subtotal: $${subtotal.toFixed(2)}</p>
+                             <p class="text-gray-700">15% IVA: $${iva.toFixed(2)}</p>
                         </div>
                         <div class="flex items-center">
                             <button class="bg-gray-300 text-black font-bold py-1 px-3 rounded cantidad-decremento" data-id="${producto.prod_id}">-</button>
@@ -138,18 +140,16 @@
                 producto.cantidad -= 1;
                 localStorage.setItem('carrito', JSON.stringify(carrito));
                 cargarCarrito(); // Recargar el carrito
-            } else if (producto && producto.cantidad === 1) {
-                eliminarProducto(id); // Eliminar si la cantidad llega a 1 y se intenta decrementar
             }
         }
 
         // Cargar el carrito cuando la página haya cargado
         window.onload = cargarCarrito;
 
-        
+
 
         // Función para finalizar la compra
-        
+
         document.getElementById('finalizarCompra').addEventListener('click', async () => {
             const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
             if (carrito.length === 0) {
@@ -205,112 +205,119 @@
         document.addEventListener('DOMContentLoaded', verificarToken);
 
         // Función para finalizar la compra y generar el PDF
-document.getElementById('finalizarCompra').addEventListener('click', async () => {
-    const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-    if (carrito.length === 0) {
-        alert('Tu carrito está vacío. Agrega productos para continuar.');
-        return;
-    }
+        document.getElementById('finalizarCompra').addEventListener('click', async () => {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            if (carrito.length === 0) {
+                alert('Tu carrito está vacío. Agrega productos para continuar.');
+                return;
+            }
 
-    // Crear un arreglo de productos a enviar al backend
-    const productosAEnviar = carrito.map(producto => ({
-        prod_id: producto.prod_id, // Obtener el ID del producto
-        cantidad: producto.cantidad  // Obtener la cantidad del producto
-    }));
+            // Crear un arreglo de productos a enviar al backend
+            const productosAEnviar = carrito.map(producto => ({
+                prod_id: producto.prod_id, // Obtener el ID del producto
+                cantidad: producto.cantidad  // Obtener la cantidad del producto
+            }));
 
-    try {
-        // Obtener datos del usuario
-        const usuarioResponse = await fetch('http://localhost:3000/usuarios'); // Asegúrate de que la URL es correcta
-        const usuarios = await usuarioResponse.json(); // Suponiendo que el endpoint devuelve un array de usuarios
-        const usuario = usuarios[0]; // Tomar el primer usuario del array
+            try {
+                // Obtener datos del usuario
+                const usuarioResponse = await fetch('http://localhost:3000/usuarios'); // Asegúrate de que la URL es correcta
+                const usuarios = await usuarioResponse.json(); // Suponiendo que el endpoint devuelve un array de usuarios
+                const usuario = usuarios[0]; // Tomar el primer usuario del array
 
-        const response = await fetch('http://localhost:3000/actualizar-stock', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ productos: productosAEnviar }), // Enviar el carrito al backend
-        });
+                const response = await fetch('http://localhost:3000/actualizar-stock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productos: productosAEnviar }), // Enviar el carrito al backend
+                });
 
-        const result = await response.json();
+                const result = await response.json();
 
-        if (result.success) {
-            // Generar PDF
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let totalCarrito = 0;
+                if (result.success) {
+                    // Generar PDF
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    let totalCarrito = 0;
+                    let totalIVA = 0; // Nueva variable para el IVA total
 
-            // Estilos del PDF
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(22);
-            doc.text("Factura de Compra", 105, 20, { align: "center" });
+                    // Estilos del PDF
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(22);
+                    doc.text("Factura de Compra", 105, 20, { align: "center" });
 
-            // Datos del usuario
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`ID de Usuario: ${usuario.usua_id}`, 20, 30);
-            doc.text(`Cédula: ${usuario.usua_ced}`, 20, 35);
-            doc.text(`Nombre: ${usuario.usua_nom} ${usuario.usua_ape}`, 20, 40);
-            doc.text(`Correo: ${usuario.usua_correo}`, 20, 45);
+                    // Datos del usuario
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`ID de Usuario: ${usuario.usua_id}`, 20, 30);
+                    doc.text(`Cédula: ${usuario.usua_ced}`, 20, 35);
+                    doc.text(`Nombre: ${usuario.usua_nom} ${usuario.usua_ape}`, 20, 40);
+                    doc.text(`Correo: ${usuario.usua_correo}`, 20, 45);
 
-            // Separador
-            doc.setLineWidth(0.5);
-            doc.line(10, 50, 200, 50); // Línea horizontal
+                    // Separador
+                    doc.setLineWidth(0.5);
+                    doc.line(10, 50, 200, 50); // Línea horizontal
 
-            // Encabezado de la tabla
-            doc.setFont('helvetica', 'bold');
-            doc.text("Producto", 20, 55);
-            doc.text("Cantidad", 120, 55);
-            doc.text("Subtotal", 170, 55);
+                    // Encabezado de la tabla
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("Producto", 20, 55);
+                    doc.text("Cantidad", 120, 55);
+                    doc.text("Subtotal", 170, 55);
 
-            doc.setLineWidth(0.5);
-            doc.line(10, 58, 200, 58); // Línea horizontal
+                    doc.setLineWidth(0.5);
+                    doc.line(10, 58, 200, 58); // Línea horizontal
 
-            // Detalles de la compra
-            let startY = 65; // Posición inicial de Y
-            carrito.forEach(producto => {
-                const precio = parseFloat(producto.prod_prec);
-                const subtotal = precio * producto.cantidad;
-                totalCarrito += subtotal;
+                    // Detalles de la compra
+                    let startY = 65; // Posición inicial de Y
+                    carrito.forEach(producto => {
+                        const precio = parseFloat(producto.prod_prec);
+                        const subtotal = precio * producto.cantidad;
+                        const ivaProducto = subtotal * 0.15; // Calcular IVA por producto
+                        totalIVA += ivaProducto; // Acumular el IVA total
+                        totalCarrito += subtotal; // Sumar el subtotal sin IVA
 
-                doc.setFont('helvetica', 'normal');
-                doc.text(producto.prod_nom, 20, startY);
-                doc.text(producto.cantidad.toString(), 120, startY);
-                doc.text(`$${subtotal.toFixed(2)}`, 170, startY);
+                        doc.setFont('helvetica', 'normal');
+                        doc.text(producto.prod_nom, 20, startY);
+                        doc.text(producto.cantidad.toString(), 120, startY);
+                        doc.text(`$${subtotal.toFixed(2)}`, 170, startY); // Subtotal sin IVA
 
-                startY += 10; // Aumentar la posición Y para la siguiente fila
-            });
+                        startY += 10; // Aumentar la posición Y para la siguiente fila
+                    });
 
-            // Línea de total
-            doc.setFont('helvetica', 'bold');
-            doc.setLineWidth(0.5);
-            doc.line(10, startY, 200, startY); // Línea horizontal
-            doc.text("Total", 120, startY + 10);
-            doc.text(`$${totalCarrito.toFixed(2)}`, 170, startY + 10);
+                    // Mostrar el IVA total
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("IVA 15%", 120, startY + 10);
+                    doc.text(`$${totalIVA.toFixed(2)}`, 170, startY + 10);
 
-            // Firmar la factura
-            doc.setFont('helvetica', 'normal');
-            doc.text("Gracias por su compra!", 105, startY + 25, { align: "center" });
+                    // Línea de total final (Subtotal + IVA)
+                    startY += 20;
+                    doc.line(10, startY, 200, startY); // Línea horizontal
+                    doc.text("Total con IVA", 120, startY + 10);
+                    doc.text(`$${(totalCarrito + totalIVA).toFixed(2)}`, 170, startY + 10);
 
-            // Descargar el PDF
-            doc.save("factura_compra.pdf"); 
+                    // Mensaje de agradecimiento
+                    doc.setFont('helvetica', 'normal');
+                    doc.text("Gracias por su compra!", 105, startY + 25, { align: "center" });
 
-            alert('Gracias por tu compra! Stock actualizado.');
-            localStorage.removeItem('carrito'); // Limpiar el carrito
-            cargarCarrito(); // Actualizar la vista
-        } else {
-            alert('Error al actualizar el stock: ' + result.message);
+                    // Descargar el PDF
+                    doc.save("factura_compra.pdf");
+
+                alert('Gracias por tu compra! Stock actualizado.');
+                localStorage.removeItem('carrito'); // Limpiar el carrito
+                cargarCarrito(); // Actualizar la vista
+            } else {
+                alert('Error al actualizar el stock: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error al finalizar la compra:', error);
+            alert('Hubo un problema al procesar la compra.');
         }
-    } catch (error) {
-        console.error('Error al finalizar la compra:', error);
-        alert('Hubo un problema al procesar la compra.');
-    }
-});
+        });
 
 
 
     </script>
-    
+
 </body>
 
 </html>

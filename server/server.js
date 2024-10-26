@@ -127,6 +127,60 @@ app.post('/actualizar-stock', async (req, res) => {
   }
 });
 
+// Ruta para eliminar un producto
+app.delete('/productos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM public.productos WHERE prod_id = $1', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    res.json({ message: 'Producto eliminado exitosamente' });
+  } catch (err) {
+    console.error('Error al eliminar el producto', err);
+    res.status(500).send('Error al eliminar el producto');
+  }
+});
+
+// Ruta para editar un producto (todos los campos)
+app.put('/productos/:id', async (req, res) => {
+  const { id } = req.params;
+  const { prod_nom, prod_desc, prod_estado, prod_ruta, prod_prec, prod_stock } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE public.productos SET prod_nom = $1, prod_desc = $2, prod_estado = $3, prod_ruta = $4, prod_prec = $5, prod_stock = $6 WHERE prod_id = $7',
+      [prod_nom, prod_desc, prod_estado, prod_ruta, prod_prec, prod_stock, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    res.json({ message: 'Producto actualizado exitosamente' });
+  } catch (err) {
+    console.error('Error al actualizar el producto', err);
+    res.status(500).send('Error al actualizar el producto');
+  }
+});
+
+// Ruta para añadir stock a un producto
+app.put('/productos/:id/stock', async (req, res) => {
+  const { id } = req.params;
+  const { additionalStock } = req.body;
+  try {
+    const currentStockResult = await pool.query('SELECT prod_stock FROM public.productos WHERE prod_id = $1', [id]);
+    if (currentStockResult.rowCount === 0) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+    const currentStock = currentStockResult.rows[0].prod_stock;
+    const newStock = currentStock + additionalStock;
+
+    await pool.query('UPDATE public.productos SET prod_stock = $1 WHERE prod_id = $2', [newStock, id]);
+    res.json({ message: 'Stock actualizado exitosamente', newStock });
+  } catch (err) {
+    console.error('Error al añadir stock', err);
+    res.status(500).send('Error al añadir stock');
+  }
+});
+
 
 // Iniciar el servidor
 app.listen(port, () => {

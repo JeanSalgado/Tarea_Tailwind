@@ -84,9 +84,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Manejar el botón de cerrar sesión
         document.getElementById('logout-btn').addEventListener('click', () => {
-            // Aquí puedes agregar la lógica de cerrar sesión
             alert('Sesión cerrada exitosamente');
-            window.location.href = 'index.html'; // Redirigir al inicio o página de login
+            window.location.href = 'index.html';
         });
 
         // Obtener los productos
@@ -109,19 +108,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td class="border px-4 py-2">
                     <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded edit-btn" data-id="${producto.prod_id}">Editar</button>
                     <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded delete-btn" data-id="${producto.prod_id}">Eliminar</button>
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded stock-btn" data-id="${producto.prod_id}">Agregar Stock</button>
                 </td>
             `;
 
             productList.appendChild(productRow);
         });
 
-        // Añadir eventos a los botones de editar
+        // Funcionalidad para los botones de editar
         document.querySelectorAll('.edit-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const prodId = e.target.getAttribute('data-id');
                 const newName = prompt('Editar nombre del producto:');
                 if (newName) {
-                    await fetch(`/productos/${prodId}`, {
+                    await fetch(`http://localhost:3000/productos/${prodId}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -133,16 +133,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Añadir eventos a los botones de eliminar
+        // Funcionalidad para los botones de eliminar
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const prodId = e.target.getAttribute('data-id');
                 const confirmDelete = confirm('¿Estás seguro de eliminar este producto?');
                 if (confirmDelete) {
-                    await fetch(`/productos/${prodId}`, {
+                    await fetch(`http://localhost:3000/productos/${prodId}`, {
                         method: 'DELETE',
                     });
                     location.reload();  // Recarga la página después de la eliminación
+                }
+            });
+        });
+
+        // Funcionalidad para los botones de agregar stock
+        document.querySelectorAll('.stock-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const prodId = e.target.getAttribute('data-id');
+                const additionalStock = prompt('Cantidad de stock a agregar:');
+                if (additionalStock) {
+                    await fetch(`http://localhost:3000/productos/${prodId}/stock`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ prod_stock: parseInt(additionalStock) }),
+                    });
+                    location.reload();  // Recarga la página para mostrar los cambios
                 }
             });
         });
@@ -151,6 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error al obtener los datos', error);
     }
 });
+
 </script>
 
 <script>
