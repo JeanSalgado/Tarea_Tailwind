@@ -2,6 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const app = express();
 const port = 3000;
+const cors = require('cors');
 
 // Configura la conexión a PostgreSQL
 const pool = new Pool({
@@ -12,17 +13,24 @@ const pool = new Pool({
   port: 5432,
 });
 
+app.use(cors({
+  origin: 'http://127.0.0.1:5500', // Origen permitido
+  methods: ['GET', 'POST', 'PUT', 'DELETE'] // Métodos permitidos
+}));
+
+app.use(express.json());
+
 // Middleware para permitir el acceso desde el frontend (CORS)
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-const jwt = require('jsonwebtoken'); 
+const jwt = require('jsonwebtoken');
 app.use(express.json());
 
 // Token 
-const JWT_SECRET ="ddRDQyAXG4LMiJnSvn7nELtdhw4h3sp834sPrzn47ckEee0iijDPsZDz7cXlnrtl"
+const JWT_SECRET = "ddRDQyAXG4LMiJnSvn7nELtdhw4h3sp834sPrzn47ckEee0iijDPsZDz7cXlnrtl"
 
 // Ruta para obtener los productos
 app.get('/productos', async (req, res) => {
@@ -92,44 +100,44 @@ app.post('/actualizar-stock', async (req, res) => {
   const client = await pool.connect(); // Conexión a la base de datos
 
   try {
-      await client.query('BEGIN'); // Iniciar transacción
-      const resultados = [];
+    await client.query('BEGIN'); // Iniciar transacción
+    const resultados = [];
 
-      // Iterar sobre los productos y actualizar el stock en la base de datos
-      for (const producto of productos) {
-          const { prod_id, cantidad } = producto;
+    // Iterar sobre los productos y actualizar el stock en la base de datos
+    for (const producto of productos) {
+      const { prod_id, cantidad } = producto;
 
-          // Decrementar el stock del producto
-          const queryText = 'UPDATE productos SET prod_stock = prod_stock - $1 WHERE prod_id = $2 AND prod_stock >= $1';
-          const values = [cantidad, prod_id];
+      // Decrementar el stock del producto
+      const queryText = 'UPDATE productos SET prod_stock = prod_stock - $1 WHERE prod_id = $2 AND prod_stock >= $1';
+      const values = [cantidad, prod_id];
 
-          // Ejecutar la consulta
-          const result = await client.query(queryText, values);
+      // Ejecutar la consulta
+      const result = await client.query(queryText, values);
 
-          if (result.rowCount === 0) {
-              // Si no se pudo actualizar, significa que no hay suficiente stock
-              resultados.push({ prod_id, success: false, message: `No hay suficiente stock para el producto con ID: ${prod_id}` });
-          } else {
-              resultados.push({ prod_id, success: true, message: 'Stock actualizado exitosamente' });
-          }
+      if (result.rowCount === 0) {
+        // Si no se pudo actualizar, significa que no hay suficiente stock
+        resultados.push({ prod_id, success: false, message: `No hay suficiente stock para el producto con ID: ${prod_id}` });
+      } else {
+        resultados.push({ prod_id, success: true, message: 'Stock actualizado exitosamente' });
       }
+    }
 
-      await client.query('COMMIT'); // Confirmar transacción
+    await client.query('COMMIT'); // Confirmar transacción
 
-      // Responder con el resultado de cada producto
-      res.status(200).json({ success: true, resultados });
+    // Responder con el resultado de cada producto
+    res.status(200).json({ success: true, resultados });
   } catch (error) {
-      await client.query('ROLLBACK'); // Revertir cambios en caso de error
-      console.error('Error al actualizar el stock', error);
-      res.status(500).json({ success: false, message: error.message });
+    await client.query('ROLLBACK'); // Revertir cambios en caso de error
+    console.error('Error al actualizar el stock', error);
+    res.status(500).json({ success: false, message: error.message });
   } finally {
-      client.release(); // Liberar la conexión
+    client.release(); // Liberar la conexión
   }
 });
 
 // Ruta para eliminar un producto
-app.delete('/productos/:id', async (req, res) => {
-  const { id } = req.params;
+app.delete('/productos', async (req, res) => {
+  const { id } = req.body;
   try {
     const result = await pool.query('DELETE FROM public.productos WHERE prod_id = $1', [id]);
     if (result.rowCount === 0) {
@@ -141,6 +149,7 @@ app.delete('/productos/:id', async (req, res) => {
     res.status(500).send('Error al eliminar el producto');
   }
 });
+
 
 // Ruta para editar un producto (todos los campos)
 app.put('/productos/:id', async (req, res) => {
@@ -162,25 +171,38 @@ app.put('/productos/:id', async (req, res) => {
 });
 
 // Ruta para añadir stock a un producto
-app.put('/productos/:id/stock', async (req, res) => {
-  const { id } = req.params;
-  const { additionalStock } = req.body;
+app.put('/productos/stock', async (req, res) => {
+  const { id, additionalStock } = req.body;
+
+  console.log('ID del producto:', id);
+  console.log('Cantidad de stock a agregar:', additionalStock);
+
+  if (!id || !Number.isInteger(additionalStock)) {
+    return res.status(400).json({ message: 'ID o additionalStock inválido' });
+  }
+
   try {
     const currentStockResult = await pool.query('SELECT prod_stock FROM public.productos WHERE prod_id = $1', [id]);
     if (currentStockResult.rowCount === 0) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
+
     const currentStock = currentStockResult.rows[0].prod_stock;
     const newStock = currentStock + additionalStock;
 
-    await pool.query('UPDATE public.productos SET prod_stock = $1 WHERE prod_id = $2', [newStock, id]);
+    const updateResult = await pool.query('UPDATE public.productos SET prod_stock = $1 WHERE prod_id = $2', [newStock, id]);
+    if (updateResult.rowCount === 0) {
+      throw new Error('Error al actualizar el stock en la base de datos');
+    }
+
+    console.log('Stock actualizado correctamente en la base de datos');
     res.json({ message: 'Stock actualizado exitosamente', newStock });
+
   } catch (err) {
-    console.error('Error al añadir stock', err);
-    res.status(500).send('Error al añadir stock');
+    console.error('Error al procesar la solicitud de actualización de stock:', err.message);
+    res.status(500).json({ message: 'Error interno al añadir stock', error: err.message });
   }
 });
-
 
 // Iniciar el servidor
 app.listen(port, () => {

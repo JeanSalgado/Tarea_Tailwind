@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil - GAMING.JS</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-gray-100">
 
     <nav class="bg-blue-600 p-4">
@@ -23,7 +25,7 @@
     <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-6">
         <h1 class="text-4xl font-extrabold text-center mb-6 text-gray-800">Perfil</h1>
 
-        <!-- Sección de información del usuario -->
+        <!-- Información del usuario -->
         <div class="mb-10 text-center">
             <div class="inline-block bg-gray-100 p-4 rounded-lg shadow-lg">
                 <p id="user-rol" class="text-2xl font-semibold"></p>
@@ -38,7 +40,7 @@
             </div>
         </div>
 
-        <!-- Sección para mostrar los productos en una tabla -->
+        <!-- Tabla de productos -->
         <section class="py-12 bg-white">
             <h2 class="text-3xl font-bold mb-4">Tus Productos</h2>
             <div class="overflow-x-auto">
@@ -55,7 +57,7 @@
                         </tr>
                     </thead>
                     <tbody id="product-list">
-                        <!-- Los productos se insertarán aquí dinámicamente -->
+                        <!-- Productos se insertarán dinámicamente -->
                     </tbody>
                 </table>
             </div>
@@ -65,40 +67,33 @@
     <footer class="bg-blue-600 p-4">
         <p class="text-center text-white">© 2024 GAMING.JS - Todos los derechos reservados</p>
     </footer>
-</body>
-</html>
 
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Obtener los datos del usuario
-        const usuarioResponse = await fetch('http://localhost:3000/usuarios');
-        const usuarios = await usuarioResponse.json();
-        const usuario = usuarios[0];  // Asumiendo que hay un solo usuario
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const usuarioResponse = await fetch('http://localhost:3000/usuarios');
+                const usuarios = await usuarioResponse.json();
+                const usuario = usuarios[0];
 
-        // Insertar la información del usuario en la página
-        document.getElementById('user-rol').textContent = usuario.usua_rol;
-        document.getElementById('user-name').textContent = `${usuario.usua_nom} ${usuario.usua_ape}`;
-        document.getElementById('user-email').textContent = usuario.usua_correo;
-        document.getElementById('user-photo').src = usuario.usua_url_fot || 'default-user-photo.png';
+                document.getElementById('user-rol').textContent = usuario.usua_rol;
+                document.getElementById('user-name').textContent = `${usuario.usua_nom} ${usuario.usua_ape}`;
+                document.getElementById('user-email').textContent = usuario.usua_correo;
+                document.getElementById('user-photo').src = usuario.usua_url_fot || 'default-user-photo.png';
 
-        // Manejar el botón de cerrar sesión
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            alert('Sesión cerrada exitosamente');
-            window.location.href = 'index.html';
-        });
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    localStorage.removeItem('token');
+                    alert('Sesión cerrada exitosamente');
+                    window.location.href = 'login.html';
+                });
 
-        // Obtener los productos
-        const response = await fetch('http://localhost:3000/productos');
-        const productos = await response.json();
+                const response = await fetch('http://localhost:3000/productos');
+                const productos = await response.json();
+                const productList = document.getElementById('product-list');
 
-        const productList = document.getElementById('product-list');
-        productList.innerHTML = '';  // Limpia el contenedor antes de insertar productos
+                productos.forEach(producto => {
+                    const productRow = document.createElement('tr');
 
-        productos.forEach(producto => {
-            const productRow = document.createElement('tr');
-            
-            productRow.innerHTML = `
+                    productRow.innerHTML = `
                 <td class="border px-4 py-2"><img src="${producto.prod_ruta}" alt="${producto.prod_nom}" class="w-16 h-auto"></td>
                 <td class="border px-4 py-2">${producto.prod_nom}</td>
                 <td class="border px-4 py-2">${producto.prod_desc}</td>
@@ -108,76 +103,69 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td class="border px-4 py-2">
                     <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded edit-btn" data-id="${producto.prod_id}">Editar</button>
                     <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded delete-btn" data-id="${producto.prod_id}">Eliminar</button>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded stock-btn" data-id="${producto.prod_id}">Agregar Stock</button>
                 </td>
             `;
+                    productList.appendChild(productRow);
+                });
 
-            productList.appendChild(productRow);
-        });
+                document.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const prodId = e.target.getAttribute('data-id');
+                        const newName = prompt('Nuevo nombre:', e.target.closest('tr').querySelector('td:nth-child(2)').textContent);
+                        const newDesc = prompt('Nueva descripción:', e.target.closest('tr').querySelector('td:nth-child(3)').textContent);
+                        const newPrecio = prompt('Nuevo precio:', e.target.closest('tr').querySelector('td:nth-child(4)').textContent.replace('$', ''));
+                        const newEstado = prompt('Nuevo estado:', e.target.closest('tr').querySelector('td:nth-child(5)').textContent);
+                        const newStock = prompt('Nuevo stock:', e.target.closest('tr').querySelector('td:nth-child(6)').textContent);
+                        const newRuta = prompt('Nueva ruta de imagen:', e.target.closest('tr').querySelector('img').src);
 
-        // Funcionalidad para los botones de editar
-        document.querySelectorAll('.edit-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const prodId = e.target.getAttribute('data-id');
-                const newName = prompt('Editar nombre del producto:');
-                if (newName) {
-                    await fetch(`http://localhost:3000/productos/${prodId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ prod_nom: newName }),
+                        if (newName && newDesc && newPrecio && newEstado && newStock && newRuta) {
+                            await fetch(`http://localhost:3000/productos/${prodId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    prod_nom: newName,
+                                    prod_desc: newDesc,
+                                    prod_prec: parseFloat(newPrecio),
+                                    prod_estado: newEstado,
+                                    prod_stock: parseInt(newStock, 10),
+                                    prod_ruta: newRuta
+                                }),
+                            });
+                            location.reload();
+                        }
                     });
-                    location.reload();  // Recarga la página para mostrar los cambios
-                }
-            });
-        });
+                });
 
-        // Funcionalidad para los botones de eliminar
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const prodId = e.target.getAttribute('data-id');
-                const confirmDelete = confirm('¿Estás seguro de eliminar este producto?');
-                if (confirmDelete) {
-                    await fetch(`http://localhost:3000/productos/${prodId}`, {
-                        method: 'DELETE',
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const prodId = e.target.getAttribute('data-id');
+                        const confirmDelete = confirm('¿Estás seguro de eliminar este producto?');
+                        if (confirmDelete) {
+                            const response = await fetch('http://localhost:3000/productos', {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ id: prodId })
+                            });
+                            if (response.ok) {
+                                alert('Producto eliminado exitosamente');
+                                e.target.closest('tr').remove();
+                            } else {
+                                alert('Error al eliminar el producto');
+                            }
+                        }
                     });
-                    location.reload();  // Recarga la página después de la eliminación
-                }
-            });
+                });
+
+            } catch (error) {
+                console.error('Error al obtener los datos', error);
+            }
         });
+    </script>
 
-        // Funcionalidad para los botones de agregar stock
-        document.querySelectorAll('.stock-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const prodId = e.target.getAttribute('data-id');
-                const additionalStock = prompt('Cantidad de stock a agregar:');
-                if (additionalStock) {
-                    await fetch(`http://localhost:3000/productos/${prodId}/stock`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ prod_stock: parseInt(additionalStock) }),
-                    });
-                    location.reload();  // Recarga la página para mostrar los cambios
-                }
-            });
-        });
-
-    } catch (error) {
-        console.error('Error al obtener los datos', error);
-    }
-});
-
-</script>
-
-<script>
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        window.location.href = 'login.html';
-    });
-
-</script>
 </body>
+
 </html>
